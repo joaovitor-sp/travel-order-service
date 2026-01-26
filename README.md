@@ -75,6 +75,10 @@ Grupo protegido por `jwt.stateless`: `/api/v1/*`
 | POST | `/api/v1/orders/{id}/cancel` | Autenticado | Cancela pedido |
 
 Filtros na listagem: `status`, `destination`, `created_from/created_to`, `departure_date_from/departure_date_to`, `return_date_from/return_date_to`, `per_page`.
+Campos para criar pedido:  `destination`, `departure_date`, `return_date`.
+Campos para disponiveis atualizar pedido:  `destination`, `departure_date`, `return_date`.
+
+(OBSERVAÇÃO): Campos de data aceitam data no formato YYYY-MM-DD
 
 ## 🧪 Exemplos
 
