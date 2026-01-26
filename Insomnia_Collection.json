@@ -1,0 +1,145 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-01-25T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.1.0",
+  "resources": [
+    {
+      "_id": "wrk_travel_order",
+      "_type": "workspace",
+      "name": "Travel Order Service",
+      "description": "API para gerenciamento de pedidos de viagem"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8000/api",
+        "token": ""
+      }
+    },
+    {
+      "_id": "req_generate_tokens",
+      "_type": "request",
+      "name": "1. Generate Test Tokens",
+      "method": "GET",
+      "url": "{{ _.base_url }}/test/generate-tokens",
+      "description": "Gera tokens pré-definidos para testes (usuário comum e admin)"
+    },
+    {
+      "_id": "req_generate_custom_token",
+      "_type": "request",
+      "name": "2. Generate Custom Token",
+      "method": "POST",
+      "url": "{{ _.base_url }}/test/generate-token",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"user_id\": \"custom-789\",\n  \"name\": \"Maria Santos\",\n  \"is_admin\": false\n}"
+      }
+    },
+    {
+      "_id": "req_list_orders",
+      "_type": "request",
+      "name": "List Travel Orders",
+      "method": "GET",
+      "url": "{{ _.base_url }}/v1/travel-orders",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ],
+      "description": "Lista pedidos (usuário vê só os seus, admin vê todos)"
+    },
+    {
+      "_id": "req_list_orders_filtered",
+      "_type": "request",
+      "name": "List Travel Orders (Filtered)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/v1/travel-orders?status=requested&destination=Paulo&per_page=10",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_create_order",
+      "_type": "request",
+      "name": "Create Travel Order",
+      "method": "POST",
+      "url": "{{ _.base_url }}/v1/travel-orders",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"destination\": \"São Paulo\",\n  \"departure_date\": \"2026-02-01\",\n  \"return_date\": \"2026-02-05\"\n}"
+      }
+    },
+    {
+      "_id": "req_show_order",
+      "_type": "request",
+      "name": "Show Travel Order",
+      "method": "GET",
+      "url": "{{ _.base_url }}/v1/travel-orders/1",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        }
+      ]
+    },
+    {
+      "_id": "req_approve_order",
+      "_type": "request",
+      "name": "Approve Travel Order (Admin Only)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/v1/travel-orders/1/approve",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "description": "Apenas administradores podem aprovar"
+    },
+    {
+      "_id": "req_cancel_order",
+      "_type": "request",
+      "name": "Cancel Travel Order",
+      "method": "POST",
+      "url": "{{ _.base_url }}/v1/travel-orders/1/cancel",
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.token }}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "description": "Usuário pode cancelar seus próprios pedidos (não aprovados)"
+    }
+  ]
+}

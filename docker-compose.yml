@@ -1,0 +1,59 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: ./docker/php
+    container_name: travel_order_app
+    working_dir: /var/www
+    ports:
+      - '8000:8000'
+    command: sh -lc "sh docker/php/start.sh"
+    volumes:
+      - ./:/var/www
+    environment:
+      XDEBUG_MODE: debug
+      XDEBUG_CONFIG: client_host=host.docker.internal client_port=9003
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    expose:
+      - "9003"
+    networks:
+      - laravel
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    image: mysql:8.0
+    container_name: travel_order_mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: travel_order
+      MYSQL_USER: travel_user
+      MYSQL_PASSWORD: travel_password
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - laravel
+
+  redis:
+    image: redis:7-alpine
+    container_name: travel_order_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - laravel
+  
+volumes:
+  mysql_data:
+  redis_data:
+    driver: local
+
+networks:
+  laravel:
+    driver: bridge
