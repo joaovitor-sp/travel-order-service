@@ -88,7 +88,9 @@ curl -s -X PATCH http://localhost:8000/api/v1/orders/1 \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{
-    "destination": "Rio de Janeiro"
+    "destination": "São Paulo",
+    "departure_date": "2026-02-01",
+    "return_date": "2026-02-05"
   }' | jq
 ```
 
