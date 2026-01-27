@@ -1,7 +1,6 @@
 #!/bin/sh
 set -e
 
-composer install
 php artisan optimize:clear
 
 # inicia o worker em background
