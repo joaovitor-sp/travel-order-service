@@ -1,42 +1,41 @@
 # Travel Order Service
 
-Microserviço para gerenciamento de pedidos de viagem com autenticação JWT, filas em Redis e execução via Docker.
+Microservice for managing travel orders with JWT authentication, Redis queues, and Docker-based execution.
 
-## 🚀 Tecnologias
+## 🚀 Technologies
 
-- PHP 8.4
-- Laravel 12
-- MySQL 8
-- Redis 7 (filas)
-- Docker
-- JWT Authentication (tymon/jwt-auth)
+* PHP 8.4
+* Laravel 12
+* MySQL 8
+* Redis 7 (queues)
+* Docker
+* JWT Authentication (tymon/jwt-auth)
 
-## 📋 Arquitetura
+## 📋 Architecture
 
-Projeto seguindo **DDD** (Domain, Application, Http) e políticas de autorização:
+The project follows **DDD** (Domain, Application, Http) and authorization policies:
 
 ```
 app/
-├── Domain/         # regra de negócio pura 
-│   ├── Models/         # Entidades do domínio
-│   ├── Enums/          # Estados fixos, como status de pedidos
-│   └── Events/         # Eventos que representam algo que aconteceu no domínio 
-├── Application/    # coordena a execução de uma tarefa, casos de uso    
-│   ├── UseCases/       # Casos de uso da aplicação 
-│   ├── Listeners/      # Escutam eventos e disparam ações
-│   └── Jobs/           # Trabalhos assíncronos
-└── Http/           # Camada de apresentação, responsável por expor a API
-    ├── Controllers/    # REST controllers que recebem requisições HTTP
-    ├── Middleware/     # Camada que intercepta requisições
-    ├── Requests/       # Validações de dados
-    ├── Policies/       # Regras de autorização
-    └── Resources/      # Transformação de dados para retorno em JSON
-
+├── Domain/         # Core business logic
+│   ├── Models/         # Domain entities
+│   ├── Enums/          # Fixed states (e.g., order status)
+│   └── Events/         # Domain events
+├── Application/    # Use case orchestration
+│   ├── UseCases/       # Application use cases
+│   ├── Listeners/      # Event listeners
+│   └── Jobs/           # Async jobs
+└── Http/           # Presentation layer (API)
+    ├── Controllers/    # HTTP controllers
+    ├── Middleware/     # Request interceptors
+    ├── Requests/       # Validation
+    ├── Policies/       # Authorization rules
+    └── Resources/      # JSON transformers
 ```
 
 ## 🔧 Setup
 
-### Com Docker compose
+### Using Docker Compose
 
 ```bash
 cp .env.example .env
@@ -45,50 +44,62 @@ docker compose exec app composer install
 docker compose exec app php artisan migrate
 ```
 
-O container `app` inicializa o servidor HTTP na porta 8000 e o worker de filas em background (Redis).
+The `app` container starts the HTTP server on port 8000 and runs the Redis queue worker in the background.
 
-## 🔐 Autenticação JWT (stateless)
+## 🔐 JWT Authentication (stateless)
 
-- Middleware: alias `jwt.stateless` (hidrata `Auth::user` pelo payload do JWT).
-- Geração de token de teste: endpoint público.
+* Middleware: `jwt.stateless` (hydrates `Auth::user` from JWT payload)
+* Public endpoint available to generate test tokens
 
-### Endpoints de token
+### Token Endpoint
 
-- `GET /api/test/generate-token` → retorna um token de exemplo (`sub`, `name`, `is_admin`).
+* `GET /api/test/generate-token` → returns a sample token (`sub`, `name`, `is_admin`)
 
-Header obrigatório nas rotas protegidas:
+Required header for protected routes:
 
 ```
-Authorization: Bearer {seu_token}
+Authorization: Bearer {your_token}
 ```
 
 ## 📚 API
 
-Grupo protegido por `jwt.stateless`: `/api/v1/*`
+Protected routes: `/api/v1/*`
 
-| Método | Endpoint | Permissão | Descrição |
-|--------|----------|-----------|-----------|
-| GET | `/api/v1/orders` | Autenticado | Lista pedidos (usuário vê os seus; admin vê todos) |
-| POST | `/api/v1/orders` | Autenticado | Cria pedido |
-| GET | `/api/v1/orders/{id}` | Autenticado | Detalhe do pedido |
-| POST | `/api/v1/orders/{id}/approve` | Autheticado | Aprova pedido |
-| PATCH | `/api/v1/orders/{id}` | Autenticado | Atualiza pedido (parcial) |
-| POST | `/api/v1/orders/{id}/cancel` | Autenticado | Cancela pedido |
+| Method | Endpoint                      | Permission    | Description                                 |
+| ------ | ----------------------------- | ------------- | ------------------------------------------- |
+| GET    | `/api/v1/orders`              | Authenticated | List orders (user sees own, admin sees all) |
+| POST   | `/api/v1/orders`              | Authenticated | Create order                                |
+| GET    | `/api/v1/orders/{id}`         | Authenticated | Order details                               |
+| POST   | `/api/v1/orders/{id}/approve` | Authenticated | Approve order                               |
+| PATCH  | `/api/v1/orders/{id}`         | Authenticated | Update order                                |
+| POST   | `/api/v1/orders/{id}/cancel`  | Authenticated | Cancel order                                |
 
-Filtros na listagem: `status`, `destination`, `created_from/created_to`, `departure_date_from/departure_date_to`, `return_date_from/return_date_to`, `per_page`.
-Campos para criar pedido:  `destination`, `departure_date`, `return_date`.
-Campos para disponiveis atualizar pedido:  `destination`, `departure_date`, `return_date`.
+### Filters
 
-(OBSERVAÇÃO): Campos de data aceitam data no formato YYYY-MM-DD
+* status
+* destination
+* created_from / created_to
+* departure_date_from / departure_date_to
+* return_date_from / return_date_to
+* per_page
 
-## 🧪 Exemplos
+### Fields
 
-Gerar token de teste:
+* Create: `destination`, `departure_date`, `return_date`
+* Update: `destination`, `departure_date`, `return_date`
+
+> Date format: `YYYY-MM-DD`
+
+## 🧪 Examples
+
+### Generate token
+
 ```bash
 curl -s http://localhost:8000/api/test/generate-token | jq
 ```
 
-Atualizar pedido (parcial):
+### Update order
+
 ```bash
 curl -s -X PATCH http://localhost:8000/api/v1/orders/1 \
   -H "Authorization: Bearer {token}" \
@@ -100,13 +111,15 @@ curl -s -X PATCH http://localhost:8000/api/v1/orders/1 \
   }' | jq
 ```
 
-Listar pedidos:
+### List orders
+
 ```bash
 curl -s "http://localhost:8000/api/v1/orders?status=requested" \
   -H "Authorization: Bearer {token}" | jq
 ```
 
-Criar pedido:
+### Create order
+
 ```bash
 curl -s -X POST http://localhost:8000/api/v1/orders \
   -H "Authorization: Bearer {token}" \
@@ -118,55 +131,60 @@ curl -s -X POST http://localhost:8000/api/v1/orders \
   }' | jq
 ```
 
-Aprovar (admin):
+### Approve (admin)
+
 ```bash
 curl -s -X POST http://localhost:8000/api/v1/orders/1/approve \
-  -H "Authorization: Bearer {token_userAdmin}" | jq
+  -H "Authorization: Bearer {admin_token}" | jq
 ```
 
-Cancelar:
+### Cancel
+
 ```bash
 curl -s -X POST http://localhost:8000/api/v1/orders/1/cancel \
-  -H "Authorization: Bearer {token_userAdmin}" | jq
+  -H "Authorization: Bearer {admin_token}" | jq
 ```
 
-## 📝 Regras de Negócio
+## 📝 Business Rules
 
-- Criação: usuário autenticado; `user_id` vêm do JWT; status inicial `requested`.
-- Listagem: não-admin vê somente seus pedidos; admin vê todos; filtros e paginação.
-- Aprovação: apenas admin; não aprova já aprovado.
-- Cancelamento: apenas admin; não cancela já cancelado; não cancela aprovado.
-- Atualização: apenas dono do pedido; permitido enquanto `status` for `requested`; não é possível alterar `status` via update.
+* Creation: authenticated user; `user_id` comes from JWT; initial status is `requested`
+* Listing: users see only their own orders; admins see all
+* Approval: admin only; cannot approve already approved orders
+* Cancellation: admin only; cannot cancel approved or already canceled orders
+* Update: only the owner; allowed only when status is `requested`; cannot change status via update
 
-Políticas registradas em `AppServiceProvider` (ex.: `TravelOrderPolicy`).
+Policies registered in `AppServiceProvider` (e.g., `TravelOrderPolicy`)
 
-## 📦 Banco de Dados
+## 📦 Database
 
-Tabela `travel_orders`:
+Table: `travel_orders`
 
-| Campo | Tipo | Descrição |
-|-------|------|-----------|
-| id | bigint | PK auto-increment |
-| user_id | string | ID do usuário (JWT `sub`) |
-| destination | string | Destino |
-| departure_date | date | Partida |
-| return_date | date | Retorno |
-| status | string | requested/approved/canceled |
-| created_at | timestamp | Criado em |
-| updated_at | timestamp | Atualizado em |
+| Field          | Type      | Description                     |
+| -------------- | --------- | ------------------------------- |
+| id             | bigint    | Auto-increment PK               |
+| user_id        | string    | User ID (JWT `sub`)             |
+| destination    | string    | Destination                     |
+| departure_date | date      | Departure                       |
+| return_date    | date      | Return                          |
+| status         | string    | requested / approved / canceled |
+| created_at     | timestamp | Created at                      |
+| updated_at     | timestamp | Updated at                      |
 
-## 📨 Filas (Redis)
+## 📨 Queues (Redis)
 
-- `QUEUE_CONNECTION=redis` no `.env`.
-- Worker roda dentro do container `app` (via script/start). Listeners que implementam `ShouldQueue` são enfileirados automaticamente.
-- Evento de domínio: `TravelOrderStatusUpdated` → listener `QueueTravelOrderStatusNotification` (registrado em `AppServiceProvider`).
+* `QUEUE_CONNECTION=redis`
+* Worker runs inside `app` container
+* Async listeners use `ShouldQueue`
+* Event: `TravelOrderStatusUpdated`
+* Listener: `QueueTravelOrderStatusNotification`
 
-Logs do worker/APP:
+Logs:
+
 ```bash
 docker compose logs -f app
 ```
 
-## 🧪 Testes
+## 🧪 Tests
 
 ```bash
 docker compose exec app php artisan test
@@ -174,17 +192,20 @@ docker compose exec app php artisan test
 
 ## 🐳 Docker
 
-Serviços:
-- `app`: PHP + Laravel (serve + queue worker)
-- `mysql`: banco
-- `redis`: filas
+Services:
 
-Subir:
+* app (Laravel + queue worker)
+* mysql
+* redis
+
+Start:
+
 ```bash
 docker compose up -d --build
 ```
 
-Derrubar:
+Stop:
+
 ```bash
 docker compose down
 ```
