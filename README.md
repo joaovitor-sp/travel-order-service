@@ -1,6 +1,6 @@
 # Travel Order Service
 
-Microservice for managing travel orders with JWT authentication, RabbitMQ queues, and Docker-based execution.
+Microservice for managing travel orders with JWT authentication, RabbitMQ queues, Redis cache, and Docker-based execution.
 
 ## 🚀 Technologies
 
@@ -178,6 +178,12 @@ Table: `travel_orders`
 * Async listeners use `ShouldQueue`
 * Event: `TravelOrderStatusUpdated`
 * Listener: `QueueTravelOrderStatusNotification`
+
+## ⚡ Cache (Redis)
+
+* `CACHE_STORE=redis`
+* `CACHE_TTL_SECONDS=30` (ajustável)
+* Listagem e detalhe de ordens são cacheados; mudanças limpam o cache
 
 Logs:
 
