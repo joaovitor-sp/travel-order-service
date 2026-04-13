@@ -23,6 +23,7 @@ services:
     depends_on:
       - mysql
       - redis
+      - rabbitmq
 
   mysql:
     image: mysql:8.0
@@ -48,10 +49,26 @@ services:
       - redis_data:/data
     networks:
       - laravel
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: travel_order_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: travel_user
+      RABBITMQ_DEFAULT_PASS: travel_password
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - laravel
   
 volumes:
   mysql_data:
   redis_data:
+    driver: local
+  rabbitmq_data:
     driver: local
 
 networks:

@@ -24,7 +24,7 @@ return [
     | used by your application. An example configuration is provided for
     | each backend supported by Laravel. You're also free to add more.
     |
-    | Drivers: "sync", "database", "beanstalkd", "sqs", "redis",
+    | Drivers: "sync", "database", "beanstalkd", "sqs", "redis", "rabbitmq",
     |          "deferred", "background", "failover", "null"
     |
     */
@@ -69,6 +69,41 @@ return [
             'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
             'queue' => env('REDIS_QUEUE', 'default'),
             'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 90),
+            'block_for' => null,
+            'after_commit' => false,
+        ],
+
+        'rabbitmq' => [
+            'driver' => 'rabbitmq',
+            'queue' => env('RABBITMQ_QUEUE', 'default'),
+            'hosts' => [
+                'host' => env('RABBITMQ_HOST', '127.0.0.1'),
+                'port' => env('RABBITMQ_PORT', 5672),
+                'user' => env('RABBITMQ_USER', 'guest'),
+                'password' => env('RABBITMQ_PASSWORD', 'guest'),
+                'vhost' => env('RABBITMQ_VHOST', '/'),
+                'heartbeat' => env('RABBITMQ_HEARTBEAT_CONNECTION', 0),
+            ],
+            'pool' => [
+                'max_connections' => env('RABBITMQ_MAX_CONNECTIONS', 10),
+                'min_connections' => env('RABBITMQ_MIN_CONNECTIONS', 2),
+                'max_channels_per_connection' => env('RABBITMQ_MAX_CHANNELS_PER_CONNECTION', 100),
+                'max_retries' => env('RABBITMQ_MAX_RETRIES', 3),
+                'retry_delay' => env('RABBITMQ_RETRY_DELAY', 1000),
+                'health_check_enabled' => env('RABBITMQ_HEALTH_CHECK_ENABLED', true),
+                'health_check_interval' => env('RABBITMQ_HEALTH_CHECK_INTERVAL', 30),
+            ],
+            'options' => [
+                'queue' => [
+                    'job' => \iamfarhad\LaravelRabbitMQ\Jobs\RabbitMQJob::class,
+                    'qos' => [
+                        'prefetch_size' => 0,
+                        'prefetch_count' => 10,
+                        'global' => false,
+                    ],
+                ],
+            ],
+            'retry_after' => (int) env('RABBITMQ_RETRY_AFTER', 90),
             'block_for' => null,
             'after_commit' => false,
         ],

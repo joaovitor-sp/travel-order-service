@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    librabbitmq-dev \
     libzip-dev \
     zip \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache \
@@ -15,6 +16,9 @@ RUN apt-get update && apt-get install -y \
 
 RUN pecl install redis \
     && docker-php-ext-enable redis
+
+RUN pecl install amqp \
+    && docker-php-ext-enable amqp
 
 RUN mkdir -p /var/www/storage /var/www/bootstrap/cache \
  && chown -R www-data:www-data /var/www \

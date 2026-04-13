@@ -1,13 +1,14 @@
 # Travel Order Service
 
-Microservice for managing travel orders with JWT authentication, Redis queues, and Docker-based execution.
+Microservice for managing travel orders with JWT authentication, RabbitMQ queues, and Docker-based execution.
 
 ## 🚀 Technologies
 
 * PHP 8.4
 * Laravel 12
 * MySQL 8
-* Redis 7 (queues)
+* Redis 7 (cache)
+* RabbitMQ 3 (queues)
 * Docker
 * JWT Authentication (tymon/jwt-auth)
 
@@ -44,7 +45,7 @@ docker compose exec app composer install
 docker compose exec app php artisan migrate
 ```
 
-The `app` container starts the HTTP server on port 8000 and runs the Redis queue worker in the background.
+The `app` container starts the HTTP server on port 8000 and runs the RabbitMQ worker in the background.
 
 ## 🔐 JWT Authentication (stateless)
 
@@ -170,9 +171,9 @@ Table: `travel_orders`
 | created_at     | timestamp | Created at                      |
 | updated_at     | timestamp | Updated at                      |
 
-## 📨 Queues (Redis)
+## 📨 Queues (RabbitMQ)
 
-* `QUEUE_CONNECTION=redis`
+* `QUEUE_CONNECTION=rabbitmq`
 * Worker runs inside `app` container
 * Async listeners use `ShouldQueue`
 * Event: `TravelOrderStatusUpdated`
@@ -197,6 +198,7 @@ Services:
 * app (Laravel + queue worker)
 * mysql
 * redis
+* rabbitmq
 
 Start:
 

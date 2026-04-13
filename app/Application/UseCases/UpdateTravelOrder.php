@@ -4,6 +4,7 @@ namespace App\Application\UseCases;
 
 use App\Domain\Repositories\TravelOrderRepositoryImpl;
 use App\Domain\Models\TravelOrder;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Use case to update a travel order.
@@ -16,6 +17,8 @@ class UpdateTravelOrder
         $travelOrder->canUpdate();
         $travelOrder->fill($data);
         $travelOrder->save();
+
+        Cache::tags(['travel_orders'])->flush();
 
         return $travelOrder;
     }
